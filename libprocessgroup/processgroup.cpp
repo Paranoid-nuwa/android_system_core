@@ -213,6 +213,17 @@ bool SetTaskProfiles(pid_t tid, const std::vector<std::string>& profiles, bool u
                                                        use_fd_cache);
 }
 
+// Keep the C ABI used by older vendor camera blobs. Newer callers use the
+// C++ declaration from processgroup.h, whose exported name is mangled.
+extern "C" bool SetTaskProfilesLegacy(pid_t tid, const std::vector<std::string>& profiles,
+                                      bool use_fd_cache) __asm__("SetTaskProfiles");
+
+extern "C" bool SetTaskProfilesLegacy(pid_t tid, const std::vector<std::string>& profiles,
+                                      bool use_fd_cache) {
+    return TaskProfiles::GetInstance().SetTaskProfiles(tid, std::span<const std::string>(profiles),
+                                                       use_fd_cache);
+}
+
 bool SetTaskProfiles(pid_t tid, std::initializer_list<std::string_view> profiles,
                      bool use_fd_cache) {
     return TaskProfiles::GetInstance().SetTaskProfiles(
